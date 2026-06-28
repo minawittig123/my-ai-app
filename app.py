@@ -7,7 +7,7 @@ st.title("⚔️ StudyQuest AI")
 st.write("Turn your dry school notes into a gamified quiz. Built by a 14-year-old developer.")
 
 # 1. Hardcode your working API key safely for testing
-GROQ_API_KEY = "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"
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
 # 2. Setup memory storage for the chat history
 if "chat_history" not in st.session_state:
