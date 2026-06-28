@@ -178,7 +178,9 @@ if active_text_input or uploaded_photo:
         
         with st.spinner("⚔️ AI is thinking..."):
             completion = client.chat.completions.create(
+                # NEW ACTIVE ID VERSION  
                 model="llama-3.2-11b-vision-preview",
+
                 messages=payload
             )
         
