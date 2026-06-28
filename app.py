@@ -31,7 +31,7 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     </style>
-""", unsafe_index=True)
+""", unsafe_allow_html=True)
 
 # 2. Sidebar Customization Dashboard (Personalization Options)
 st.sidebar.image("https://icons8.com", width=80)
@@ -67,7 +67,8 @@ st.sidebar.markdown(
     '<a href="https://buymeacoffee.com" target="_blank">'
     '<img src="https://buymeacoffee.com" '
     'alt="Buy Me A Coffee" style="height: 45px !important;width: 162px !important;" ></a>',
-    unsafe_index=True
+    unsafe_allow_html=True
+
 )
 
 # 4. App Main Screen Title Elements
