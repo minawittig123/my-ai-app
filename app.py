@@ -10,7 +10,6 @@ st.set_page_config(
 )
 
 # 2. Sidebar Customization Dashboard (Re-integrated Graphics & Links)
-st.sidebar.image("https://githubusercontent.com", width=60)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
 
@@ -25,17 +24,6 @@ ai_class = st.sidebar.selectbox(
     "Choose your AI Guide Companion:",
     ["Cyberpunk Hacker Mage", "Strict Medieval King", "Chill Retro Gamer", "Sarcastic Robot Coach"]
 )
-
-# Visual RPG Progress Level Element Tracker
-st.sidebar.markdown("---")
-st.sidebar.subheader("🎒 Your Inventory")
-st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
-
-# Monetization Support link setup
-st.sidebar.markdown("---")
-st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write("I'm a newly turned 13-year-old developer! Consider dropping a few bucks in my tip jar to help support the application.")
-st.sidebar.link_button("☕ Support on Buy Me A Coffee", "https://buymeacoffee.com", use_container_width=True)
 
 # Main Screen Headings
 st.markdown('<h1 style="text-align: center; font-weight: 800; font-size: 2.8rem;">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
