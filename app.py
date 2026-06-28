@@ -53,7 +53,7 @@ if user_message := st.chat_input("Paste your notes or textbook text here to star
         )
         
         # Get response text
-        ai_response = completion.choices.message.content
+        ai_response = completion.choices[0].message.content
         
         # Show AI message
         with st.chat_message("assistant"):
