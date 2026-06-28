@@ -62,18 +62,17 @@ st.sidebar.write(
     "I'm a newly turned 13-year-old developer! If this app helps you crush your classes, "
     "consider dropping a few bucks in my tip jar to help fund better features."
 )
-# REPLACE 'YOUR_LINK_HERE' with your real Buy Me A Coffee or PayPal link later!
+# Yellow Buy Me A Coffee Button
 st.sidebar.markdown(
     '<a href="https://buymeacoffee.com" target="_blank">'
     '<img src="https://buymeacoffee.com" '
     'alt="Buy Me A Coffee" style="height: 45px !important;width: 162px !important;" ></a>',
     unsafe_allow_html=True
-
 )
 
 # 4. App Main Screen Title Elements
-st.markdown('<h1 class="main-title">⚔️ StudyQuest AI</h1>', unsafe_index=True)
-st.markdown('<p class="sub-title">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_index=True)
+st.markdown('<h1 class="main-title">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
+st.markdown('<p class="sub-title">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_allow_html=True)
 
 # 5. Fetch Secure API Key from Vault
 try:
