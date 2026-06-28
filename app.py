@@ -29,15 +29,14 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("🎒 Your Inventory")
 st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
 
-# Monetization Link Setup
+# 3. Monetization: The Support Tip Jar
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write("Please consider dropping a few bucks in my tip jar to help support the application.")
-st.sidebar.markdown(
-    '<a href="https://buymeacoffee.com" target="_blank">'
-    '<img src="https://buymeacoffee.com" '
-    'alt="Buy Me A Coffee" style="height: 45px !important;width: 162px !important;" ></a>',
-    unsafe_allow_html=True
+st.sidebar.write(
+    "I'm a newly turned 13-year-old developer! If this app helps you crush your classes, "
+    "consider dropping a few bucks in my tip jar to help fund better features."
+)
+st.sidebar.link_button("☕ Support on Buy Me A Coffee", "https://buymeacoffee.com", use_container_width=True)
 )
 
 # Main Screen Headings
