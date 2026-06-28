@@ -1,72 +1,17 @@
 import streamlit as st
 from groq import Groq
 
-# 1. Page Layout Config
+# 1. Premium Page Configuration
 st.set_page_config(
     page_title="StudyQuest AI | Gamified Learning", 
     page_icon="⚔️", 
     layout="centered"
 )
 
-# 2. Sidebar Customization Dashboard
+# 2. Sidebar Customization Dashboard (Dynamic elements inherit layout defaults perfectly)
 st.sidebar.image("https://icons8.com", width=80)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
-
-# THEME CONTROLLER: The 8 High-Contrast Theme Settings
-theme_choice = st.sidebar.selectbox(
-    "🎨 Choose Website Theme Color:",
-    ["Obsidian Night (Dark)", "Glacier Mint (Light)", "Deep Cyber Purple", "Retro Amber Gold", "Crimson Battle", "Ocean Abyss", "Forest Grove", "Matrix Green"]
-)
-
-# Define exact background and high-contrast text color combinations
-theme_styles = {
-    "Obsidian Night (Dark)": {"bg": "#0D0D10", "text": "#FFFFFF", "sidebar": "#16161C", "input": "#1C1C24"},
-    "Glacier Mint (Light)": {"bg": "#FFFFFF", "text": "#000000", "sidebar": "#F1F5F9", "input": "#E2E8F0"},
-    "Deep Cyber Purple": {"bg": "#120E2E", "text": "#FFFFFF", "sidebar": "#1B1643", "input": "#241D59"},
-    "Retro Amber Gold": {"bg": "#2B1A04", "text": "#FFFFFF", "sidebar": "#3D2506", "input": "#543308"},
-    "Crimson Battle": {"bg": "#260505", "text": "#FFFFFF", "sidebar": "#3D0A0A", "input": "#541010"},
-    "Ocean Abyss": {"bg": "#051622", "text": "#FFFFFF", "sidebar": "#0B2D44", "input": "#114263"},
-    "Forest Grove": {"bg": "#0A1F11", "text": "#FFFFFF", "sidebar": "#143D22", "input": "#1D5931"},
-    "Matrix Green": {"bg": "#000000", "text": "#00FF00", "sidebar": "#051405", "input": "#0A290A"}
-}
-
-active_theme = theme_styles[theme_choice]
-
-# Inject the chosen theme directly into the app elements using targeted CSS variables
-st.markdown(f"""
-    <style>
-    /* Main Background and text color overrides */
-    .stApp, div[data-testid="stAppViewContainer"], div[data-testid="stBottomBlockContainer"] {{
-        background-color: {active_theme["bg"]} !important;
-        color: {active_theme["text"]} !important;
-    }}
-    
-    /* Sidebar Overrides */
-    section[data-testid="stSidebar"] {{
-        background-color: {active_theme["sidebar"]} !important;
-    }}
-    section[data-testid="stSidebar"] * {{
-        color: {active_theme["text"]} !important;
-    }}
-    
-    /* Chat input element color overrides */
-    div[data-testid="stChatInput"] textarea {{
-        background-color: {active_theme["input"]} !important;
-        color: {active_theme["text"]} !important;
-    }}
-    
-    /* Plain Text Chat bubbles override */
-    div[data-testid="stChatMessage"] {{
-        background-color: {active_theme["sidebar"]} !important;
-        color: {active_theme["text"]} !important;
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
-# Main Screen Headings (Dynamically adopts text colors)
-st.markdown(f'<h1 style="text-align: center; color: {active_theme["text"]}; font-weight: 800; font-size: 2.8rem;">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
-st.markdown(f'<p style="text-align: center; color: {active_theme["text"]}; opacity: 0.8; font-size: 1rem; margin-bottom: 2rem;">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_allow_html=True)
 
 # Game Difficulty Options
 difficulty = st.sidebar.select_slider(
@@ -94,6 +39,10 @@ st.sidebar.markdown(
     'alt="Buy Me A Coffee" style="height: 45px !important;width: 162px !important;" ></a>',
     unsafe_allow_html=True
 )
+
+# Main Screen Headings
+st.markdown('<h1 style="text-align: center; font-weight: 800; font-size: 2.8rem;">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center; opacity: 0.8; font-size: 1rem; margin-bottom: 2rem;">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_allow_html=True)
 
 # Fetch System Key
 try:
