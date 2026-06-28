@@ -1,2 +1,3 @@
 groq
 streamlit
+st-chat-input-multimodal
