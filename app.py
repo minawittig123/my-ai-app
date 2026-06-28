@@ -24,10 +24,6 @@ ai_class = st.sidebar.selectbox(
     ["Cyberpunk Hacker Mage", "Strict Medieval King", "Chill Retro Gamer", "Sarcastic Robot Coach"]
 )
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("🎒 Your Inventory")
-st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
-
 # Monetization Link Setup - Clean and Unbreakable Native Button
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎁 Support the Project")
