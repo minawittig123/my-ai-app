@@ -1,7 +1,6 @@
 import streamlit as st
 from groq import Groq
-from PIL import Image
-import io
+import base64
 
 # 1. Premium Page Configuration
 st.set_page_config(
@@ -57,14 +56,16 @@ user_message = st.chat_input("Or paste text notes here to initialize your battle
 
 # Processing Logic variables setup
 active_input = None
-photo_bytes = None
+base64_image = None
 
 # Figure out which feature user triggered
 if user_message:
     active_input = user_message
 elif uploaded_photo:
     active_input = "Analyzing the uploaded image for your study session."
-    photo_bytes = uploaded_photo.read()
+    # FIX: Clean Base64 encoder pipeline standard format for Groq Cloud
+    file_bytes = uploaded_photo.read()
+    base64_image = base64.b64encode(file_bytes).decode("utf-8")
 elif voice_recording:
     active_input = "Analyzing your recorded microphone question."
 
@@ -98,8 +99,7 @@ if active_input:
                 messages_payload.append({"role": m["role"], "content": m["content"]})
 
         # Vision handling setup if a textbook image is uploaded
-        if photo_bytes:
-            # We must pass image content to Groq's multimodal completion endpoint
+        if base64_image:
             messages_payload.append({
                 "role": "user",
                 "content": [
@@ -107,15 +107,15 @@ if active_input:
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:image/jpeg;base64,{io.BytesIO(photo_bytes).read().hex()}" # Reads structural bytes format cleanly
+                            "url": f"data:image/jpeg;base64,{base64_image}" # Perfectly structured string container
                         }
                     }
                 ]
             })
 
-        # Dispatch vision/text model call sequence
+        # Dispatch vision model call sequence using active global model endpoint
         completion = client.chat.completions.create(
-            model="llama-3.2-11b-vision", # Fixed production endpoint
+            model="llama-3.2-11b-vision-preview", 
             messages=messages_payload
         )
         
