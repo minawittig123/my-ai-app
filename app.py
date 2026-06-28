@@ -74,7 +74,7 @@ if user_message := st.chat_input("Paste textbook text or notes here to initializ
         
         payload = [system_instruction] + [m for m in st.session_state.chat_history if m["role"] != "system"]
         
-        completion = client.chat.completions.create(
+        ai_response = completion.choices[0].message.content(
             model="llama-3.1-8b-instant",
             messages=payload
         )
