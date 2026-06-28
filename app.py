@@ -31,7 +31,7 @@ st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
 # Monetization Link Setup - Clean and Unbreakable Native Button
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write("I'm a newly turned 13-year-old developer! Consider dropping a few bucks in my tip jar to help support the application.")
+st.sidebar.write("Please consider dropping a few bucks in the tip jar to help support the application and help improve our website.")
 st.sidebar.link_button("☕ Support on Buy Me A Coffee", "https://buymeacoffee.com", use_container_width=True)
 
 # Main Screen Headings
