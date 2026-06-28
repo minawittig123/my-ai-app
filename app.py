@@ -9,6 +9,7 @@ st.set_page_config(
 )
 
 # 2. Sidebar Customization Dashboard
+st.sidebar.image("logo.png", use_container_width=True)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
 
