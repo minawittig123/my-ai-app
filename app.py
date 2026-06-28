@@ -2,6 +2,8 @@ import streamlit as st
 from groq import Groq
 import io
 import base64
+# Import the new advanced custom component that you added to requirements.txt
+from st_chat_input_multimodal import st_chat_input_multimodal
 
 # 1. Premium Page Configuration
 st.set_page_config(
@@ -19,14 +21,11 @@ if "current_level" not in st.session_state:
     st.session_state.current_level = 1
 if "xp_points" not in st.session_state:
     st.session_state.xp_points = 45
-if "last_processed_audio" not in st.session_state:
-    st.session_state.last_processed_audio = None
 
-# Helper function to convert uploaded images to Base64 Data URIs for Groq Vision
-def encode_image_to_data_url(uploaded_file):
-    bytes_data = uploaded_file.getvalue()
-    base64_encoded = base64.b64encode(bytes_data).decode("utf-8")
-    return f"data:{uploaded_file.type};base64,{base64_encoded}"
+# Helper function to convert binary images to Base64 Data URIs for Groq Vision
+def encode_bytes_to_data_url(image_bytes, mime_type="image/png"):
+    base64_encoded = base64.b64encode(image_bytes).decode("utf-8")
+    return f"data:{mime_type};base64,{base64_encoded}"
 
 # 2. Sidebar Customization Dashboard
 st.sidebar.title("Quest Dashboard")
@@ -59,7 +58,6 @@ if st.sidebar.button("🔄 Reset Current Quest", use_container_width=True):
     st.session_state.game_score = 0
     st.session_state.current_level = 1
     st.session_state.xp_points = 0
-    st.session_state.last_processed_audio = None
     st.toast("Quest board wiped clean! Start fresh.", icon="🧹")
     st.rerun()
 
@@ -85,7 +83,6 @@ for message in st.session_state.chat_history:
     if message["role"] == "system":
         continue
     with st.chat_message(message["role"]):
-        # If the historic message content is structured as a content list (has images)
         if isinstance(message["content"], list):
             for item in message["content"]:
                 if item["type"] == "text":
@@ -95,76 +92,72 @@ for message in st.session_state.chat_history:
         else:
             st.markdown(message["content"])
 
-# 3. Dedicated Input Interface Deck Wrapper
+# 3. Formatted Multi-Input ChatGPT Style Custom Widget Component
 st.markdown("---")
-st.write("### 🎒 Submit Your Quest Data")
 
-# Create a clean border container to bundle inputs visually into a single "box"
-input_container = st.container(border=True)
-with input_container:
-    # Top Row: Split layout for Voice and Photo inputs side-by-side
-    col1, col2 = io_cols = st.columns(2)
-    with col1:
-        voice_recording = st.audio_input("🎤 Record Audio Question", label_visibility="collapsed")
-    with col2:
-        uploaded_photo = st.file_uploader("📸 Upload Study Photo", type=["png", "jpg", "jpeg"], label_visibility="collapsed")
-    
-    # Bottom Row: Main Text Submission Input field
-    user_message = st.chat_input("Type notes, paste textbook snippets, or submit exam answers here...")
+# This renders exactly one unified bar at the bottom containing Text, Image Attachment, and Voice audio records
+custom_submission = st_chat_input_multimodal(
+    placeholder="Ask anything...",
+    support_images=True,
+    support_voice=True
+)
 
 active_text_input = None
+uploaded_image_bytes = None
 
-# 4. Action: Audio Processing Loop (Whisper Speech-to-Text)
-if voice_recording and voice_recording != st.session_state.last_processed_audio:
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
+# 4. Action: Parse incoming Data from Unified Component
+if custom_submission:
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    # Check if the user typed text
+    if custom_submission.get("text"):
+        active_text_input = custom_submission["text"].strip()
         
-        with st.spinner("🎙️ Transcribing your voice question..."):
-            audio_bytes = voice_recording.getvalue()
-            audio_file = ("audio.wav", audio_bytes, "audio/wav")
+    # Check if a voice recording was captured directly inside the input bar
+    if custom_submission.get("audio_bytes"):
+        try:
+            with st.spinner("🎙️ Transcribing voice from chatbar..."):
+                raw_audio = custom_submission["audio_bytes"]
+                audio_file = ("audio.wav", raw_audio, "audio/wav")
+                
+                transcription = client.audio.transcriptions.create(
+                    file=audio_file,
+                    model="whisper-large-v3", 
+                    response_format="text"
+                )
+                active_text_input = str(transcription).strip()
+        except Exception as audio_err:
+            st.error(f"Voice Processing Error: {audio_err}")
             
-            transcription = client.audio.transcriptions.create(
-                file=audio_file,
-                model="whisper-large-v3", 
-                response_format="text"
-            )
-            active_text_input = str(transcription).strip()
-            st.session_state.last_processed_audio = voice_recording
-            
-    except Exception as audio_err:
-        st.error(f"Audio Scanner Error: {audio_err}")
-
-# Text box priority selection override
-if user_message:
-    active_text_input = user_message
+    # Check if an image was dropped/attached inside the chat bar
+    if custom_submission.get("image_bytes"):
+        uploaded_image_bytes = custom_submission["image_bytes"]
 
 # 5. Core Game Reasoning Generation System Loop
-# Trigger logic if either text was entered OR a photo was uploaded independently
-if active_text_input or uploaded_photo:
+if active_text_input or uploaded_image_bytes:
     
-    # Format the payload message structure for the model
     user_content_payload = []
     
-    # Add textual information to payload if available
+    # Process text segment
     if active_text_input:
         user_content_payload.append({"type": "text", "text": active_text_input})
     else:
         user_content_payload.append({"type": "text", "text": "[Sent an image for analysis]"})
         
-    # Append the image as an active vision element if uploaded
-    if uploaded_photo:
-        image_data_url = encode_image_to_data_url(uploaded_photo)
+    # Process visual element payload configuration
+    if uploaded_image_bytes:
+        image_data_url = encode_bytes_to_data_url(uploaded_image_bytes)
         user_content_payload.append({
             "type": "image_url",
             "image_url": {"url": image_data_url}
         })
         
-    # Visual rendering of what the user just submitted
+    # Render user prompt locally
     with st.chat_message("user"):
         if active_text_input:
             st.markdown(active_text_input)
-        if uploaded_photo:
-            st.image(uploaded_photo, caption="Uploaded Quest Photo", width=300)
+        if uploaded_image_bytes:
+            st.image(uploaded_image_bytes, caption="Uploaded Quest Photo", width=300)
         
     st.session_state.chat_history.append({"role": "user", "content": user_content_payload})
 
@@ -185,14 +178,14 @@ if active_text_input or uploaded_photo:
         
         with st.spinner("⚔️ AI is thinking..."):
             completion = client.chat.completions.create(
-                # CRITICAL: Switched to Llama 3.2 Vision model to handle incoming photo analysis safely
                 model="llama-3.2-11b-vision-preview",
                 messages=payload
             )
         
+        # FIX: Access the first element in choices list using [0] to avoid TypeErrors
         ai_response = completion.choices[0].message.content
         
-        # Simple rule engine parser to intercept point metrics dynamically back to sidebar
+        # Point parser logic rules checking
         if "correct" in ai_response.lower() or "+xp" in ai_response.lower():
             st.session_state.game_score += 10
             st.session_state.xp_points += 15
