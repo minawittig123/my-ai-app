@@ -8,7 +8,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. Sidebar Customization Dashboard (Dynamic elements inherit layout defaults perfectly)
+# 2. Sidebar Customization Dashboard
 st.sidebar.image("https://icons8.com", width=80)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
@@ -29,15 +29,11 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("🎒 Your Inventory")
 st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
 
-# 3. Monetization: The Support Tip Jar
+# Monetization Link Setup - Clean and Unbreakable Native Button
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write(
-    "I'm a newly turned 13-year-old developer! If this app helps you crush your classes, "
-    "consider dropping a few bucks in my tip jar to help fund better features."
-)
+st.sidebar.write("I'm a newly turned 13-year-old developer! Consider dropping a few bucks in my tip jar to help support the application.")
 st.sidebar.link_button("☕ Support on Buy Me A Coffee", "https://buymeacoffee.com", use_container_width=True)
-)
 
 # Main Screen Headings
 st.markdown('<h1 style="text-align: center; font-weight: 800; font-size: 2.8rem;">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
