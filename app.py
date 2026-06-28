@@ -24,12 +24,6 @@ ai_class = st.sidebar.selectbox(
     ["Cyberpunk Hacker Mage", "Strict Medieval King", "Chill Retro Gamer", "Sarcastic Robot Coach"]
 )
 
-# Monetization Link Setup - Clean and Unbreakable Native Button
-st.sidebar.markdown("---")
-st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write("Please consider dropping a few bucks in the tip jar to help support the application and help improve our website.")
-st.sidebar.link_button("☕ Support on Buy Me A Coffee", "https://buymeacoffee.com", use_container_width=True)
-
 # Main Screen Headings
 st.markdown('<h1 style="text-align: center; font-weight: 800; font-size: 2.8rem;">⚔️ StudyQuest AI</h1>', unsafe_allow_html=True)
 st.markdown('<p style="text-align: center; opacity: 0.8; font-size: 1rem; margin-bottom: 2rem;">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_allow_html=True)
@@ -50,7 +44,7 @@ for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if user_message := st.chat_input("Paste textbook text or notes here to initialize your battle quest..."):
+if user_message := st.chat_input("Paste or upload textbook text or notes here to initialize your battle quest..."):
     with st.chat_message("user"):
         st.markdown(user_message)
     st.session_state.chat_history.append({"role": "user", "content": user_message})
