@@ -4,7 +4,7 @@ from groq import Groq
 # Set up the title of your website
 st.set_page_config(page_title="StudyQuest AI", page_icon="⚔️", layout="centered")
 st.title("⚔️ StudyQuest AI")
-st.write("Turn your dry school notes into a gamified quiz. Built by a 14-year-old developer.")
+st.write("Turn your dry school notes into a gamified quiz.")
 
 # 1. Hardcode your working API key safely for testing
 GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
