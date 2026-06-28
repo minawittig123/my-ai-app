@@ -22,8 +22,7 @@ if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
 
 # 2. Sidebar Customization Dashboard
-st.sidebar.image("https://github.com", width=60) # Using valid public placeholder icon
-st.sidebar.title("🛠️ Quest Dashboard")
+st.sidebar.title("Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
 
 # Game Difficulty Options
