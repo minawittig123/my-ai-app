@@ -32,7 +32,7 @@ st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
 # Monetization Link Setup
 st.sidebar.markdown("---")
 st.sidebar.subheader("🎁 Support the Project")
-st.sidebar.write("I'm a newly turned 13-year-old developer! Consider dropping a few bucks in my tip jar to help support the application.")
+st.sidebar.write("Please consider dropping a few bucks in my tip jar to help support the application.")
 st.sidebar.markdown(
     '<a href="https://buymeacoffee.com" target="_blank">'
     '<img src="https://buymeacoffee.com" '
