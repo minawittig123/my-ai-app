@@ -12,18 +12,25 @@ st.set_page_config(
 st.markdown("""
     <style>
     /* Force main canvas background color */
-    .stApp, div[data-testid="stAppViewContainer"] {
+    .stApp, div[data-testid="stAppViewContainer"], div[data-testid="stBottomBlockContainer"] {
         background-color: #0d0d10 !important;
         color: #E2E8F0 !important;
     }
     
-    /* Force sidebar to blend perfectly with the dark canvas */
+    /* Force sidebar background and force ALL text inside it to be light gray/white */
     section[data-testid="stSidebar"] {
         background-color: #121216 !important;
         border-right: 1px solid #1f1f29;
     }
+    section[data-testid="stSidebar"] * {
+        color: #E2E8F0 !important;
+    }
     
-    /* Style Chat Input box to look modern like ChatGPT */
+    /* Style Chat Input box container to remove the bright white bar at the bottom */
+    div[data-testid="stBottomBlockContainer"] {
+        background-color: #0d0d10 !important;
+    }
+    
     div[data-testid="stChatInput"] textarea {
         background-color: #1a1a24 !important;
         color: #ffffff !important;
@@ -59,7 +66,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. Sidebar Customization Dashboard (Personalization Options)
-# Fixed the broken image link with a working icon url
 st.sidebar.image("https://icons8.com", width=80)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
@@ -149,7 +155,7 @@ if user_message := st.chat_input("Paste textbook text or notes here to initializ
             messages=payload
         )
         
-        ai_response = completion.choices[0].message.content
+        ai_response = completion.choices.message.content
         
         with st.chat_message("assistant"):
             st.markdown(ai_response)
@@ -157,4 +163,3 @@ if user_message := st.chat_input("Paste textbook text or notes here to initializ
 
     except Exception as e:
         st.error(f"Execution Error: {e}")
-
