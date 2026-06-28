@@ -9,7 +9,6 @@ st.set_page_config(
 )
 
 # 2. Sidebar Customization Dashboard
-st.sidebar.image("https://githubusercontent.com", width=60)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
 
