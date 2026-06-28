@@ -115,7 +115,7 @@ if active_input:
 
         # Dispatch vision/text model call sequence
         completion = client.chat.completions.create(
-            model="llama-3.2-11b-vision-instruct", # Force Groq vision model capability
+            model="llama-3.2-11b-vision", # Fixed production endpoint
             messages=messages_payload
         )
         
