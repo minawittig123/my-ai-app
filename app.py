@@ -94,10 +94,9 @@ for message in st.session_state.chat_history:
         else:
             st.markdown(message["content"])
 
-# 3. Built-In Unified Multi-Input Interface (No External Downloads Required)
+# 3. Built-In Unified Multi-Input Interface
 st.markdown("---")
 
-# This creates a slick popup window right next to or above your chat input box
 with st.popover("➕ Attach Quest Files (Photo/Voice)", use_container_width=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -178,9 +177,8 @@ if active_text_input or uploaded_photo:
         
         with st.spinner("⚔️ AI is thinking..."):
             completion = client.chat.completions.create(
-                # NEW ACTIVE ID VERSION  
+                # UPDATED: Swapped model to the current stable Llama 3.2 11B vision production ID
                 model="llama-3.2-11b-vision-preview",
-
                 messages=payload
             )
         
