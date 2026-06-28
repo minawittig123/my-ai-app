@@ -1,64 +1,133 @@
 import streamlit as st
 from groq import Groq
 
-# Set up the title of your website
-st.set_page_config(page_title="StudyQuest AI", page_icon="⚔️", layout="centered")
-st.title("⚔️ StudyQuest AI")
-st.write("Turn your dry school notes into a gamified quiz.")
+# 1. Premium Page Configuration (Dark Tech Theme Layout)
+st.set_page_config(
+    page_title="StudyQuest AI | Gamified Learning", 
+    page_icon="⚔️", 
+    layout="centered"
+)
 
-# 1. Hardcode your working API key safely for testing
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+# Custom CSS to make it look smooth like ChatGPT/Gemini
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #121214;
+        color: #E2E8F0;
+    }
+    .main-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #FF6B6B, #4D96FF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        margin-bottom: 0.2rem;
+    }
+    .sub-title {
+        text-align: center;
+        color: #94A3B8;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    </style>
+""", unsafe_index=True)
 
-# 2. Setup memory storage for the chat history
+# 2. Sidebar Customization Dashboard (Personalization Options)
+st.sidebar.image("https://icons8.com", width=80)
+st.sidebar.title("🛠️ Quest Dashboard")
+st.sidebar.write("Customize your AI study adventure.")
+
+# Customization Option 1: Game Difficulty
+difficulty = st.sidebar.select_slider(
+    "Select Game Difficulty:",
+    options=["Casual Player", "Scholar", "Hardcore Legend"]
+)
+
+# Customization Option 2: AI Personality Subclass
+ai_class = st.sidebar.selectbox(
+    "Choose your AI Guide Companion:",
+    ["Cyberpunk Hacker Mage", "Strict Medieval King", "Chill Retro Gamer", "Sarcastic Robot Coach"]
+)
+
+# Customization Option 3: User Level Tracker (Visual RPG Element)
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎒 Your Inventory")
+st.sidebar.progress(45, text="✨ Level 3 Apprentice Wizard (45/100 XP)")
+
+# 3. Monetization: The Support Tip Jar
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎁 Support the Project")
+st.sidebar.write(
+    "I'm a newly turned 13-year-old developer! If this app helps you crush your classes, "
+    "consider dropping a few bucks in my tip jar to help fund better features."
+)
+# REPLACE 'YOUR_LINK_HERE' with your real Buy Me A Coffee or PayPal link later!
+st.sidebar.markdown(
+    '<a href="https://buymeacoffee.com" target="_blank">'
+    '<img src="https://buymeacoffee.com" '
+    'alt="Buy Me A Coffee" style="height: 45px !important;width: 162px !important;" ></a>',
+    unsafe_index=True
+)
+
+# 4. App Main Screen Title Elements
+st.markdown('<h1 class="main-title">⚔️ StudyQuest AI</h1>', unsafe_index=True)
+st.markdown('<p class="sub-title">The Ultimate High-Performance Gamified AI Study Guide</p>', unsafe_index=True)
+
+# 5. Fetch Secure API Key from Vault
+try:
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+except Exception:
+    st.error("Missing API Key! Please configure GROQ_API_KEY inside your Streamlit Secrets Vault.")
+    st.stop()
+
+# 6. Initialize Chat Engine & Session History Memory
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Display previous messages on the screen
+# Display beautifully formatted chat logs on screen
 for message in st.session_state.chat_history:
-    # Skip displaying the hidden system instructions to the user
     if message["role"] == "system":
         continue
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 3. Handle user typing a message
-if user_message := st.chat_input("Paste your notes or textbook text here to start the game..."):
-    # Show user message
+# 7. Action: Process User Input Note text
+if user_message := st.chat_input("Paste textbook text or notes here to initialize your battle quest..."):
     with st.chat_message("user"):
         st.markdown(user_message)
     st.session_state.chat_history.append({"role": "user", "content": user_message})
 
     try:
-        # Connect to Groq
         client = Groq(api_key=GROQ_API_KEY)
         
-        # Inject the system instructions at the very beginning of the history context
+        # Advanced Dynamic System Prompt injecting the personalization options chosen in the sidebar!
         system_instruction = {
             "role": "system", 
             "content": (
-                "You are StudyQuest AI, a gamified high school study bot. Your job is to take whatever "
-                "text, notes, or topics the user gives you and immediately turn them into a fun, "
-                "multiple-choice quiz game. Present one question at a time. Tell them if they got it right "
-                "or wrong after they answer, track their score like an RPG game, and give punchy, encouraging feedback."
+                f"You are StudyQuest AI, an elite gamified study engine. "
+                f"Adopt the tone of a '{ai_class}' guide companion. "
+                f"Adjust the academic standard of your evaluation to match a '{difficulty}' difficulty rating. "
+                "Analyze user provided text and immediately launch an interactive multiple-choice quiz session. "
+                "Ask exactly ONE question at a time. Evaluate their accuracy immediately after their turn, "
+                "track their score like an immersive role playing game, and provide highly customized, thematic feedback."
             )
         }
         
-        # Build full payload ensuring system prompt is at the top
+        # Build complete dialogue payload ensuring dynamic system directives sit at the index root
         payload = [system_instruction] + [m for m in st.session_state.chat_history if m["role"] != "system"]
         
-        # Request response from the model
+        # Dispatch transaction to Groq platform infrastructure
         completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=payload
         )
         
-        # Get response text
         ai_response = completion.choices[0].message.content
         
-        # Show AI message
         with st.chat_message("assistant"):
             st.markdown(ai_response)
         st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
 
     except Exception as e:
-        st.error(f"Something went wrong: {e}")
+        st.error(f"Execution Error: {e}")
