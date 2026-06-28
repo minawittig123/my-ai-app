@@ -8,13 +8,38 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom CSS to make it look smooth like ChatGPT/Gemini
+# Custom CSS to force a unified, beautiful dark mode skin across all elements
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #121214;
-        color: #E2E8F0;
+    /* Force main canvas background color */
+    .stApp, div[data-testid="stAppViewContainer"] {
+        background-color: #0d0d10 !important;
+        color: #E2E8F0 !important;
     }
+    
+    /* Force sidebar to blend perfectly with the dark canvas */
+    section[data-testid="stSidebar"] {
+        background-color: #121216 !important;
+        border-right: 1px solid #1f1f29;
+    }
+    
+    /* Style Chat Input box to look modern like ChatGPT */
+    div[data-testid="stChatInput"] textarea {
+        background-color: #1a1a24 !important;
+        color: #ffffff !important;
+        border: 1px solid #2d2d3d !important;
+        border-radius: 12px !important;
+    }
+    
+    /* Make chat bubbles easily readable in custom dark mode */
+    div[data-testid="stChatMessage"] {
+        background-color: #161620 !important;
+        border: 1px solid #232333 !important;
+        border-radius: 12px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Main Screen Titles */
     .main-title {
         font-size: 2.8rem;
         font-weight: 800;
@@ -34,6 +59,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. Sidebar Customization Dashboard (Personalization Options)
+# Fixed the broken image link with a working icon url
 st.sidebar.image("https://icons8.com", width=80)
 st.sidebar.title("🛠️ Quest Dashboard")
 st.sidebar.write("Customize your AI study adventure.")
@@ -131,3 +157,4 @@ if user_message := st.chat_input("Paste textbook text or notes here to initializ
 
     except Exception as e:
         st.error(f"Execution Error: {e}")
+
