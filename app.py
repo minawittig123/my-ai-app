@@ -61,7 +61,7 @@ for message in st.session_state.chat_history:
 
 # 3. Dedicated Inputs Interface Layout
 st.markdown("---")
-voice_recording = st.audio_input("🎤 Record your audio question instead:")
+voice_recording = st.audio_input("🎤 Record your audio question:")
 user_message = st.chat_input("Paste text notes or type answers here...")
 
 # Active logic parameters
