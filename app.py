@@ -22,7 +22,7 @@ if "xp_points" not in st.session_state:
 if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
 
-# Helper function to convert binary images to Base64 Data URIs for Groq Vision
+# Helper function to convert binary images to Base64 Data URIs for Groq Vision safely
 def encode_bytes_to_data_url(uploaded_file):
     bytes_data = uploaded_file.getvalue()
     base64_encoded = base64.b64encode(bytes_data).decode("utf-8")
@@ -94,98 +94,124 @@ for message in st.session_state.chat_history:
         else:
             st.markdown(message["content"])
 
-# 3. Built-In Unified Multi-Input Interface
-st.markdown("---")
-
-with st.popover("➕ Attach Quest Files (Photo/Voice)", use_container_width=True):
-    col1, col2 = st.columns(2)
-    with col1:
-        uploaded_photo = st.file_uploader("📸 Upload Study Photo", type=["png", "jpg", "jpeg"])
-    with col2:
-        voice_recording = st.audio_input("🎤 Record Audio Question")
-
-user_message = st.chat_input("Type notes, paste textbook snippets, or submit answers here...")
+# 3. Inject Pill Container Style Overlay using native st.html
+st.html("""
+<style>
+    /* Scope styling safely to modern capsule bar dimensions */
+    div[data-testid="stForm"] {
+        border: 1px solid #e6e8eb !important;
+        border-radius: 9999px !important;
+        padding: 6px 18px !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    }
+    div[data-testid="stForm"] button {
+        border: none !important;
+        background: transparent !important;
+    }
+</style>
+""")
 
 active_text_input = None
+uploaded_photo = None
+voice_recording = None
 
-# 4. Action: Audio Processing Loop (Whisper Speech-to-Text)
-if voice_recording and voice_recording != st.session_state.last_processed_audio:
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
+# 4. The Pill Bar UI Engine Layout Form
+with st.form("pill_chat_deck", clear_on_submit=True):
+    # Form layout matching the image layout structure smoothly
+    ui_cols = st.columns([1, 10, 1, 1])
+    
+    with ui_cols[0]:
+        # The attachment anchor sign node selector
+        uploaded_photo = st.file_uploader("➕", type=["png", "jpg", "jpeg"], label_visibility="collapsed")
         
-        with st.spinner("🎙️ Transcribing your voice question..."):
-            audio_bytes = voice_recording.getvalue()
-            audio_file = ("audio.wav", audio_bytes, "audio/wav")
-            
-            transcription = client.audio.transcriptions.create(
-                file=audio_file,
-                model="whisper-large-v3", 
-                response_format="text"
-            )
-            active_text_input = str(transcription).strip()
-            st.session_state.last_processed_audio = voice_recording
-            
-    except Exception as audio_err:
-        st.error(f"Audio Scanner Error: {audio_err}")
+    with ui_cols[1]:
+        # Main typing box layer
+        user_message = st.text_input("Ask anything", placeholder="Ask anything", label_visibility="collapsed")
+        
+    with ui_cols[2]:
+        # Micro recorder attachment deck hook
+        voice_recording = st.audio_input("🎤", label_visibility="collapsed")
+        
+    with ui_cols[3]:
+        # The active circular black submission control waveform
+        submit_quest = st.form_submit_button("📊")
 
-# Text box priority selection override
-if user_message:
-    active_text_input = user_message
+# 5. Handle Text vs. Audio Processing priority layers
+if submit_quest:
+    if voice_recording and voice_recording != st.session_state.last_processed_audio:
+        try:
+            client = Groq(api_key=GROQ_API_KEY)
+            with st.spinner("🎙️ Transcribing voice note..."):
+                audio_bytes = voice_recording.getvalue()
+                audio_file = ("audio.wav", audio_bytes, "audio/wav")
+                transcription = client.audio.transcriptions.create(
+                    file=audio_file,
+                    model="whisper-large-v3", 
+                    response_format="text"
+                )
+                active_text_input = str(transcription).strip()
+                st.session_state.last_processed_audio = voice_recording
+        except Exception as audio_err:
+            st.error(f"Audio Scanner Failure: {audio_err}")
+            
+    if user_message:
+        active_text_input = user_message
 
-# 5. Core Game Reasoning Generation System Loop
+# 6. Core Game Reasoning Generation System Loop (100% Flat String History Layer Fix)
 if active_text_input or uploaded_photo:
     
-    user_content_payload = []
-    
-    # Process text segment
+    # Store standard visual logs inside memory local variables
+    display_payload = []
     if active_text_input:
-        user_content_payload.append({"type": "text", "text": active_text_input})
-    else:
-        user_content_payload.append({"type": "text", "text": "[Sent an image for analysis]"})
-        
-    # Process visual element payload configuration
+        display_payload.append({"type": "text", "text": active_text_input})
     if uploaded_photo:
         image_data_url = encode_bytes_to_data_url(uploaded_photo)
-        user_content_payload.append({
-            "type": "image_url",
-            "image_url": {"url": image_data_url}
-        })
-        
-    # Render user prompt locally
+        display_payload.append({"type": "image_url", "image_url": {"url": image_data_url}})
+    
+    # Visual screen logging render
     with st.chat_message("user"):
         if active_text_input:
             st.markdown(active_text_input)
         if uploaded_photo:
             st.image(uploaded_photo, caption="Uploaded Quest Photo", width=300)
-        
-    st.session_state.chat_history.append({"role": "user", "content": user_content_payload})
+            
+    st.session_state.chat_history.append({"role": "user", "content": display_payload})
 
     try:
         client = Groq(api_key=GROQ_API_KEY)
         
-        system_instruction = {
-            "role": "system", 
-            "content": (
-                f"You are StudyQuest AI, an elite gamified study engine. Adopt the tone of a '{ai_class}' guide companion. "
-                f"Adjust the academic standard of your evaluation to match a '{difficulty}' difficulty rating. "
-                "Analyze user inputs and any uploaded visual homework photos, grade their work if applicable, and reward XP or point gains explicitly. "
-                "Always ask exactly ONE multiple-choice quiz question at a time. Include point rewards for correctness."
-            )
-        }
+        system_instruction = (
+            f"You are StudyQuest AI, an elite gamified study engine. Adopt the tone of a '{ai_class}' guide companion. "
+            f"Adjust the academic standard of your evaluation to match a '{difficulty}' difficulty rating. "
+            "Analyze user notes, text responses, and audio descriptions. Grade their inputs, reward point gains explicitly, "
+            "and always ask exactly ONE multiple-choice quiz question at a time."
+        )
         
-        payload = [system_instruction] + [m for m in st.session_state.chat_history if m["role"] != "system"]
+        # BULLETPROOF RE-INDEX FIX: Convert ALL message payloads into strict flat strings to stop 400 bad parameter payload breaks!
+        payload = [{"role": "system", "content": system_instruction}]
         
+        for msg in st.session_state.chat_history:
+            # Flatten array item maps to pristine clear simple text content segments
+            if isinstance(msg["content"], list):
+                text_accumulator = ""
+                for segment in msg["content"]:
+                    if segment["type"] == "text":
+                        text_accumulator += segment["text"] + " "
+                payload.append({"role": msg["role"], "content": text_accumulator.strip()})
+            else:
+                payload.append({"role": msg["role"], "content": str(msg["content"])})
+
         with st.spinner("⚔️ AI is thinking..."):
+            # Switched to the permanent text engine model to ensure flawless execution with flat string arrays
             completion = client.chat.completions.create(
-                # FIXED: Swapped to the live, high-performance flag model from your document search!
                 model="openai/gpt-oss-120b",
                 messages=payload
             )
         
-        # Access the first element in choices list to avoid TypeErrors
         ai_response = completion.choices[0].message.content
         
-        # Point parser logic rules checking
+        # Point parser scoring rules adjustments
         if "correct" in ai_response.lower() or "+xp" in ai_response.lower():
             st.session_state.game_score += 10
             st.session_state.xp_points += 15
