@@ -177,11 +177,12 @@ if active_text_input or uploaded_photo:
         
         with st.spinner("⚔️ AI is thinking..."):
             completion = client.chat.completions.create(
-                # UPDATED: Swapped model to the current stable Llama 3.2 11B vision production ID
-                model="llama-3.2-11b-vision-preview",
+                # FIXED: Swapped to the live, high-performance flag model from your document search!
+                model="openai/gpt-oss-120b",
                 messages=payload
             )
         
+        # Access the first element in choices list to avoid TypeErrors
         ai_response = completion.choices[0].message.content
         
         # Point parser logic rules checking
