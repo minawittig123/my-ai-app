@@ -249,5 +249,5 @@ if active_text_input or uploaded_photo:
                 st.toast("🎉 LEVEL UP! You earned a new tier!", icon="👑")
         
         with st.chat_message("assistant"):
-st.markdown(ai_response)st.session_state.chat_history.append({"role": "assistant", "content": ai_response})st.rerun()except 
-Exception as e:st.error(f"Execution Error: {e}")
+        st.markdown(ai_response)st.session_state.chat_history.append({"role": "assistant", "content": ai_response})st.rerun()except 
+        Exception as e:st.error(f"Execution Error: {e}")
