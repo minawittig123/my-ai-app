@@ -97,7 +97,7 @@ for message in st.session_state.chat_history:
 # 3. Inject Precise Advanced CSS Stylesheet Overrides
 st.html("""
 <style>
-    /* 1. Turn the outer form container into a perfect white capsule bar */
+    /* Turn the outer form container into a perfect white capsule bar */
     div[data-testid="stForm"] {
         border: 1px solid #e2e8f0 !important;
         border-radius: 9999px !important;
@@ -153,20 +153,20 @@ active_text_input = None
 uploaded_photo = None
 voice_recording = None
 
-# 4. The Pill Bar UI Engine Layout Form with exact valid ratios
+# 4. The Pill Bar UI Engine Layout Form
 with st.form("pill_chat_deck", clear_on_submit=True):
-    ui_cols = st.columns([0.1, 0.7, 0.1, 0.1])
+    col_attach, col_text, col_mic, col_submit = st.columns([0.1, 0.7, 0.1, 0.1])
     
-    with ui_cols:
+    with col_attach:
         uploaded_photo = st.file_uploader("➕", type=["png", "jpg", "jpeg"], label_visibility="collapsed")
         
-    with ui_cols:
+    with col_text:
         user_message = st.text_input("Ask anything", placeholder="Ask anything", label_visibility="collapsed")
         
-    with ui_cols:
+    with col_mic:
         voice_recording = st.audio_input("🎤", label_visibility="collapsed")
         
-    with ui_cols:
+    with col_submit:
         submit_quest = st.form_submit_button("📊")
 
 # 5. Handle Text vs. Audio Processing priority layers
@@ -224,11 +224,14 @@ if active_text_input or uploaded_photo:
             "Always ask exactly ONE multiple-choice quiz question at a time. Do not process empty inputs."
         )
         
-        payload = [{"role": "system", "content": system_instruction}]
+        payload = [{"role": "system", "content": [{"type": "text", "text": system_instruction}]}]
         
-        # FIX: Preserve the exact structural dictionary array blocks for the vision model context history
+        # Build structured message logs
         for msg in st.session_state.chat_history:
-            payload.append({"role": msg["role"], "content": msg["content"]})
+            if isinstance(msg["content"], list):
+                payload.append({"role": msg["role"], "content": msg["content"]})
+            else:
+                payload.append({"role": msg["role"], "content": [{"type": "text", "text": str(msg["content"])}]})
 
         with st.spinner("⚔️ AI is thinking..."):
             completion = client.chat.completions.create(
@@ -236,7 +239,7 @@ if active_text_input or uploaded_photo:
                 messages=payload
             )
         
-        # FIX: Pulled index position 0 safely out of the choices array packet
+        # FIXED: Added back the exact list index position [0] wrapper constraint
         ai_response = completion.choices[0].message.content
         
         # Point parser scoring rules adjustments
@@ -247,7 +250,10 @@ if active_text_input or uploaded_photo:
                 st.session_state.current_level += 1
                 st.session_state.xp_points = st.session_state.xp_points % 100
                 st.toast("🎉 LEVEL UP! You earned a new tier!", icon="👑")
-        
-        with st.chat_message("assistant"):
-        st.markdown(ai_response)st.session_state.chat_history.append({"role": "assistant", "content": ai_response})st.rerun()except 
-        Exception as e:st.error(f"Execution Error: {e}")
+                   with st.chat_message("assistant"):
+            st.markdown(ai_response)
+            st.session_state.chat_history.append({"role": "assistant", "content": [{"type": "text", "text": ai_response}]})
+            st.rerun()
+
+    except Exception as e:
+        st.error(f"Execution Error: {e}")
