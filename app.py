@@ -250,10 +250,10 @@ if active_text_input or uploaded_photo:
                 st.session_state.current_level += 1
                 st.session_state.xp_points = st.session_state.xp_points % 100
                 st.toast("🎉 LEVEL UP! You earned a new tier!", icon="👑")
-                   with st.chat_message("assistant"):
-            st.markdown(ai_response)
-            st.session_state.chat_history.append({"role": "assistant", "content": [{"type": "text", "text": ai_response}]})
-            st.rerun()
+            with st.chat_message("assistant"):
+                st.markdown(ai_response)
+                st.session_state.chat_history.append({"role": "assistant", "content": [{"type": "text", "text": ai_response}]})
+                st.rerun()
 
     except Exception as e:
         st.error(f"Execution Error: {e}")
