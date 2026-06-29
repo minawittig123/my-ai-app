@@ -22,7 +22,7 @@ if "xp_points" not in st.session_state:
 if "last_processed_audio" not in st.session_state:
     st.session_state.last_processed_audio = None
 
-# Helper function to convert binary images to Base64 Data URIs for Groq Vision safely
+# Helper function to convert binary images to Base64 Data URIs safely
 def encode_bytes_to_data_url(uploaded_file):
     bytes_data = uploaded_file.getvalue()
     base64_encoded = base64.b64encode(bytes_data).decode("utf-8")
@@ -94,20 +94,57 @@ for message in st.session_state.chat_history:
         else:
             st.markdown(message["content"])
 
-# 3. Inject Pill Container Style Overlay using native st.html
+# 3. Inject Precise Advanced CSS Stylesheet Overrides
 st.html("""
 <style>
-    /* Scope styling safely to modern capsule bar dimensions */
+    /* 1. Turn the outer form container into a perfect white capsule bar */
     div[data-testid="stForm"] {
-        border: 1px solid #e6e8eb !important;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 9999px !important;
         padding: 6px 18px !important;
         background-color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
     }
-    div[data-testid="stForm"] button {
-        border: none !important;
+    
+    /* Remove default dark box backgrounds from the file uploader and audio toolsets */
+    div[data-testid="stFileUploader"], 
+    div[data-testid="stAudioInput"],
+    div[data-testid="stFileUploader"] > div,
+    div[data-testid="stAudioInput"] > div,
+    .stDropzone {
+        background-color: transparent !important;
         background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+    
+    /* Strip off background layers from text input blocks */
+    div[data-testid="stForm"] input {
+        background-color: transparent !important;
+        border: none !important;
+        color: #1a202c !important;
+    }
+    
+    /* Ensure all column boxes stack cleanly with uniform center spacing */
+    div[data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+        gap: 0px !important;
+    }
+    
+    /* Force the submission button to be a perfectly rounded circular icon */
+    div[data-testid="stFormSubmitButton"] button {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 </style>
 """)
@@ -116,25 +153,20 @@ active_text_input = None
 uploaded_photo = None
 voice_recording = None
 
-# 4. The Pill Bar UI Engine Layout Form
+# 4. The Pill Bar UI Engine Layout Form with exact valid ratios
 with st.form("pill_chat_deck", clear_on_submit=True):
-    # Form layout matching the image layout structure smoothly
-    ui_cols = st.columns([1, 10, 1, 1])
+    ui_cols = st.columns([0.1, 0.7, 0.1, 0.1])
     
-    with ui_cols[0]:
-        # The attachment anchor sign node selector
+    with ui_cols:
         uploaded_photo = st.file_uploader("➕", type=["png", "jpg", "jpeg"], label_visibility="collapsed")
         
-    with ui_cols[1]:
-        # Main typing box layer
+    with ui_cols:
         user_message = st.text_input("Ask anything", placeholder="Ask anything", label_visibility="collapsed")
         
-    with ui_cols[2]:
-        # Micro recorder attachment deck hook
+    with ui_cols:
         voice_recording = st.audio_input("🎤", label_visibility="collapsed")
         
-    with ui_cols[3]:
-        # The active circular black submission control waveform
+    with ui_cols:
         submit_quest = st.form_submit_button("📊")
 
 # 5. Handle Text vs. Audio Processing priority layers
@@ -150,26 +182,30 @@ if submit_quest:
                     model="whisper-large-v3", 
                     response_format="text"
                 )
-                active_text_input = str(transcription).strip()
+                trans_text = str(transcription).strip()
+                if trans_text:
+                    active_text_input = trans_text
                 st.session_state.last_processed_audio = voice_recording
         except Exception as audio_err:
             st.error(f"Audio Scanner Failure: {audio_err}")
             
-    if user_message:
-        active_text_input = user_message
+    if user_message and user_message.strip() != "":
+        active_text_input = user_message.strip()
 
-# 6. Core Game Reasoning Generation System Loop (100% Flat String History Layer Fix)
+# 6. Core Game Reasoning Generation System Loop
 if active_text_input or uploaded_photo:
     
-    # Store standard visual logs inside memory local variables
     display_payload = []
     if active_text_input:
         display_payload.append({"type": "text", "text": active_text_input})
+    else:
+        display_payload.append({"type": "text", "text": "[Sent an image for analysis]"})
+        
     if uploaded_photo:
         image_data_url = encode_bytes_to_data_url(uploaded_photo)
         display_payload.append({"type": "image_url", "image_url": {"url": image_data_url}})
     
-    # Visual screen logging render
+    # Render user prompt locally
     with st.chat_message("user"):
         if active_text_input:
             st.markdown(active_text_input)
@@ -184,31 +220,23 @@ if active_text_input or uploaded_photo:
         system_instruction = (
             f"You are StudyQuest AI, an elite gamified study engine. Adopt the tone of a '{ai_class}' guide companion. "
             f"Adjust the academic standard of your evaluation to match a '{difficulty}' difficulty rating. "
-            "Analyze user notes, text responses, and audio descriptions. Grade their inputs, reward point gains explicitly, "
-            "and always ask exactly ONE multiple-choice quiz question at a time."
+            "Analyze user inputs and any uploaded visual homework photos, grade their work if applicable, and reward XP or point gains explicitly. "
+            "Always ask exactly ONE multiple-choice quiz question at a time. Do not process empty inputs."
         )
         
-        # BULLETPROOF RE-INDEX FIX: Convert ALL message payloads into strict flat strings to stop 400 bad parameter payload breaks!
         payload = [{"role": "system", "content": system_instruction}]
         
+        # FIX: Preserve the exact structural dictionary array blocks for the vision model context history
         for msg in st.session_state.chat_history:
-            # Flatten array item maps to pristine clear simple text content segments
-            if isinstance(msg["content"], list):
-                text_accumulator = ""
-                for segment in msg["content"]:
-                    if segment["type"] == "text":
-                        text_accumulator += segment["text"] + " "
-                payload.append({"role": msg["role"], "content": text_accumulator.strip()})
-            else:
-                payload.append({"role": msg["role"], "content": str(msg["content"])})
+            payload.append({"role": msg["role"], "content": msg["content"]})
 
         with st.spinner("⚔️ AI is thinking..."):
-            # Switched to the permanent text engine model to ensure flawless execution with flat string arrays
             completion = client.chat.completions.create(
                 model="openai/gpt-oss-120b",
                 messages=payload
             )
         
+        # FIX: Pulled index position 0 safely out of the choices array packet
         ai_response = completion.choices[0].message.content
         
         # Point parser scoring rules adjustments
@@ -221,10 +249,5 @@ if active_text_input or uploaded_photo:
                 st.toast("🎉 LEVEL UP! You earned a new tier!", icon="👑")
         
         with st.chat_message("assistant"):
-            st.markdown(ai_response)
-        st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
-        
-        st.rerun()
-
-    except Exception as e:
-        st.error(f"Execution Error: {e}")
+st.markdown(ai_response)st.session_state.chat_history.append({"role": "assistant", "content": ai_response})st.rerun()except 
+Exception as e:st.error(f"Execution Error: {e}")
