@@ -5,7 +5,7 @@ import hashlib
 
 
 # ==========================================================
-# PAGE CONFIG
+# CONFIG
 # ==========================================================
 
 st.set_page_config(
@@ -16,7 +16,7 @@ st.set_page_config(
 
 
 # ==========================================================
-# SESSION STATE ENGINE
+# SESSION STATE
 # ==========================================================
 
 defaults = {
@@ -29,7 +29,11 @@ defaults = {
 
     "xp_points": 45,
 
-    "last_processed_audio": None
+    "last_processed_audio": None,
+
+    "last_submission": None,
+
+    "is_processing": False
 
 }
 
@@ -57,20 +61,13 @@ def encode_bytes_to_data_url(file):
 
 
 
-def audio_fingerprint(audio):
+def make_hash(data):
 
-    return hashlib.md5(
-        audio.getvalue()
-    ).hexdigest()
+    return hashlib.md5(data).hexdigest()
 
 
 
 def flatten_for_groq(content):
-
-    """
-    Converts UI structured messages into
-    flat strings required by gpt-oss-120b
-    """
 
     if isinstance(content, str):
 
@@ -82,16 +79,17 @@ def flatten_for_groq(content):
 
     for item in content:
 
-        if item.get("type") == "text":
 
-            text += item.get("text", "")
+        if item["type"] == "text":
+
+            text += item["text"]
 
 
-        elif item.get("type") == "image_url":
+        elif item["type"] == "image_url":
 
             text += (
                 "\n[User uploaded an image. "
-                "Image processing unavailable in text-only model.]"
+                "Ask the user to describe it.]"
             )
 
 
@@ -99,8 +97,9 @@ def flatten_for_groq(content):
 
 
 
+
 # ==========================================================
-# SECRET
+# API KEY
 # ==========================================================
 
 
@@ -112,10 +111,11 @@ try:
 except Exception:
 
     st.error(
-        "Missing GROQ_API_KEY in Streamlit Secrets."
+        "Missing GROQ_API_KEY."
     )
 
     st.stop()
+
 
 
 
@@ -127,11 +127,12 @@ except Exception:
 st.sidebar.title("⚔️ Quest Dashboard")
 
 
+
 difficulty = st.sidebar.select_slider(
 
     "Difficulty",
 
-    options=[
+    [
         "Casual Player",
         "Scholar",
         "Hardcore Legend"
@@ -168,9 +169,8 @@ st.sidebar.progress(
 
     st.session_state.xp_points / 100,
 
-    text=
-    f"Level {st.session_state.current_level} "
-    f"({st.session_state.xp_points}/100 XP)"
+    text=f"Level {st.session_state.current_level} "
+         f"({st.session_state.xp_points}/100 XP)"
 
 )
 
@@ -187,19 +187,19 @@ st.sidebar.metric(
 
 
 if st.sidebar.button(
-    "🔄 Reset Quest",
-    use_container_width=True
+    "🔄 Reset Quest"
 ):
 
-    st.session_state.chat_history = []
+    for key in defaults:
 
-    st.session_state.game_score = 0
+        if isinstance(defaults[key], list):
 
-    st.session_state.current_level = 1
+            st.session_state[key] = []
 
-    st.session_state.xp_points = 0
+        else:
 
-    st.session_state.last_processed_audio = None
+            st.session_state[key] = defaults[key]
+
 
 
     st.toast(
@@ -207,7 +207,6 @@ if st.sidebar.button(
         icon="🧹"
     )
 
-    st.rerun()
 
 
 
@@ -217,25 +216,27 @@ if st.sidebar.button(
 
 
 st.markdown(
+
 """
 <h1 style="
 text-align:center;
 font-size:2.8rem;
-font-weight:900;
-">
+font-weight:900;">
 ⚔️ StudyQuest AI
 </h1>
 
 <p style="
 text-align:center;
-opacity:.75;
-">
+opacity:.7;">
 The Ultimate Gamified AI Study Companion
 </p>
 
 """,
+
 unsafe_allow_html=True
+
 )
+
 
 
 
@@ -244,35 +245,31 @@ unsafe_allow_html=True
 # ==========================================================
 
 
-for msg in st.session_state.chat_history:
+for message in st.session_state.chat_history:
 
 
-    if msg["role"] == "system":
-
-        continue
-
-
-
-    with st.chat_message(msg["role"]):
+    with st.chat_message(
+        message["role"]
+    ):
 
 
-        content = msg["content"]
+        if isinstance(
+            message["content"],
+            list
+        ):
 
 
-        if isinstance(content,list):
+            for item in message["content"]:
 
 
-            for item in content:
-
-
-                if item["type"]=="text":
+                if item["type"] == "text":
 
                     st.markdown(
                         item["text"]
                     )
 
 
-                elif item["type"]=="image_url":
+                elif item["type"] == "image_url":
 
                     st.image(
                         item["image_url"]["url"],
@@ -282,12 +279,15 @@ for msg in st.session_state.chat_history:
 
         else:
 
-            st.markdown(content)
+            st.markdown(
+                message["content"]
+            )
+
 
 
 
 # ==========================================================
-# CSS PILL CHAT BAR
+# CSS PILL BAR
 # ==========================================================
 
 
@@ -302,42 +302,26 @@ border-radius:9999px !important;
 
 border:1px solid #ddd !important;
 
-padding:8px 16px !important;
+padding:8px 15px !important;
 
 background:white !important;
-
-box-shadow:
-0 5px 25px rgba(0,0,0,.06);
 
 }
 
 
 
 div[data-testid="stFileUploader"],
-div[data-testid="stAudioInput"],
-.stDropzone {
-
+div[data-testid="stAudioInput"] {
 
 background:transparent !important;
 
 border:none !important;
-
-padding:0 !important;
-
-}
-
-
-
-div[data-testid="stHorizontalBlock"] {
-
-align-items:center;
 
 }
 
 
 
 div[data-testid="stFormSubmitButton"] button {
-
 
 background:black !important;
 
@@ -349,31 +333,27 @@ width:42px !important;
 
 height:42px !important;
 
-
 }
 
 
-
 input {
-
 
 background:transparent !important;
 
 border:none !important;
 
-
 }
 
 
 </style>
-
 """
 )
 
 
 
+
 # ==========================================================
-# CHAT INPUT FORM
+# INPUT
 # ==========================================================
 
 
@@ -439,10 +419,10 @@ with st.form(
     with c4:
 
         submit = st.form_submit_button(
-
             "📊"
-
         )
+
+
 
 
 
@@ -458,15 +438,21 @@ active_text = None
 if submit:
 
 
+    if user_message.strip() != "":
+
+        active_text = user_message.strip()
+
+
+
     if voice_recording:
 
 
-        fingerprint = audio_fingerprint(
-            voice_recording
+        audio_id = make_hash(
+            voice_recording.getvalue()
         )
 
 
-        if fingerprint != st.session_state.last_processed_audio:
+        if audio_id != st.session_state.last_processed_audio:
 
 
             try:
@@ -477,21 +463,17 @@ if submit:
                 )
 
 
-                audio_file = (
+                result = client.audio.transcriptions.create(
 
-                    "audio.wav",
+                    file=(
 
-                    voice_recording.getvalue(),
+                        "audio.wav",
 
-                    "audio/wav"
+                        voice_recording.getvalue(),
 
-                )
+                        "audio/wav"
 
-
-
-                transcription = client.audio.transcriptions.create(
-
-                    file=audio_file,
+                    ),
 
                     model="whisper-large-v3",
 
@@ -500,21 +482,16 @@ if submit:
                 )
 
 
+                if str(result).strip():
 
-                if str(transcription).strip():
-
-                    active_text = str(
-                        transcription
-                    ).strip()
+                    active_text = str(result).strip()
 
 
-
-                st.session_state.last_processed_audio = fingerprint
+                st.session_state.last_processed_audio = audio_id
 
 
 
             except Exception as e:
-
 
                 st.error(
                     f"Audio error: {e}"
@@ -522,28 +499,59 @@ if submit:
 
 
 
-    if user_message.strip() != "":
-
-
-        active_text = user_message.strip()
-
-
 
 # ==========================================================
-# GROQ ENGINE
+# AI ENGINE
 # ==========================================================
 
 
-if active_text or uploaded_photo:
+submission_id = None
 
 
-    display = []
+
+if active_text:
+
+    submission_id = active_text
+
+
+
+elif uploaded_photo:
+
+    submission_id = make_hash(
+        uploaded_photo.getvalue()
+    )
+
+
+
+
+if (
+
+    (active_text or uploaded_photo)
+
+    and
+
+    submission_id != st.session_state.last_submission
+
+    and
+
+    not st.session_state.is_processing
+
+):
+
+
+    st.session_state.is_processing = True
+
+    st.session_state.last_submission = submission_id
+
+
+
+    user_payload = []
+
 
 
     if active_text:
 
-
-        display.append({
+        user_payload.append({
 
             "type":"text",
 
@@ -555,8 +563,7 @@ if active_text or uploaded_photo:
 
     if uploaded_photo:
 
-
-        display.append({
+        user_payload.append({
 
             "type":"image_url",
 
@@ -577,7 +584,7 @@ if active_text or uploaded_photo:
 
         "role":"user",
 
-        "content":display
+        "content":user_payload
 
     })
 
@@ -606,61 +613,67 @@ Difficulty:
 
 Rules:
 
-- Teach clearly.
-- Act like an RPG companion.
-- Reward progress using +XP.
-- Ask exactly one multiple choice question.
+- Be a gamified study companion.
+- Explain clearly.
+- Give rewards.
+- Use +XP when appropriate.
+- Ask one multiple choice question.
 
 """
 
 
 
-        messages = [{
+        messages = [
+
+            {
 
             "role":"system",
 
             "content":system_prompt
 
-        }]
+            }
+
+        ]
 
 
 
-        for item in st.session_state.chat_history:
+        for msg in st.session_state.chat_history:
 
 
             messages.append({
 
-                "role":item["role"],
+                "role":msg["role"],
 
                 "content":
                 flatten_for_groq(
-                    item["content"]
+                    msg["content"]
                 )
 
             })
 
 
 
-        with st.spinner(
-            "⚔️ AI thinking..."
-        ):
 
+        completion = client.chat.completions.create(
 
-            completion = client.chat.completions.create(
+            model="openai/gpt-oss-120b",
 
-                model="openai/gpt-oss-120b",
+            messages=messages
 
-                messages=messages
-
-            )
+        )
 
 
 
         ai_response = (
+
             completion
+
             .choices[0]
+
             .message
+
             .content
+
         )
 
 
@@ -672,6 +685,10 @@ Rules:
             or
 
             "+xp" in ai_response.lower()
+
+            or
+
+            "xp" in ai_response.lower()
 
         ):
 
@@ -691,22 +708,10 @@ Rules:
 
 
                 st.toast(
-
                     "🎉 LEVEL UP!",
-
                     icon="👑"
-
                 )
 
-
-
-        with st.chat_message(
-            "assistant"
-        ):
-
-            st.markdown(
-                ai_response
-            )
 
 
 
@@ -719,13 +724,17 @@ Rules:
         })
 
 
-        st.rerun()
+
+        st.session_state.is_processing = False
 
 
 
     except Exception as e:
 
 
+        st.session_state.is_processing = False
+
+
         st.error(
-            f"Groq Failure: {e}"
+            f"Execution Error: {e}"
         )
